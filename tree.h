@@ -9,7 +9,7 @@
 
 // NEW:
 // 1) many things are const
-// 2) the templated type is always passed by const ref
+// 2) the templated type is always passed by const ref so it is only ever copied once
 
 #ifndef TREE
 #define TREE
@@ -20,8 +20,9 @@
 #include <iostream>
 #include <stdexcept>
 #include <functional>
+#include <algorithm>
 
-template<typename T>
+template<typename T> 
 class MySearchTree 
 {
 private:
@@ -42,6 +43,17 @@ public:
         m_nodePtrs[1] = nullptr;
     }
 
+    void balance()
+    {
+    	// reset tree to empty vector of size 2
+    	m_nodePtrs.clear();
+    	m_nodePtrs.push_back(std::shared_ptr<Node>());
+    	m_nodePtrs.push_back(std::shared_ptr<Node>());
+
+    	quickSort(m_valHolder);
+    	medianBalance(m_valHolder, 0, m_valHolder.size());
+    }
+
 	bool insert(const T& value)
     {
     	int pos = findIndex(value);
@@ -49,7 +61,9 @@ public:
     	// if the spot is empty, we can insert it
         if (!static_cast<bool>(m_nodePtrs[pos]))
         {
-        	m_nodePtrs[pos] = std::make_unique<MySearchTree<T>::Node>(value);
+        	m_nodePtrs[pos] = std::make_shared<MySearchTree<T>::Node>(value);
+        	m_valHolder.push_back(m_nodePtrs[pos]);
+        	balance();
         	return true; 
         }
         // if the spot is taken, it means this is a duplicate
@@ -73,6 +87,7 @@ public:
         if (!hasChildren(toRemove))
         {
         	m_nodePtrs[toRemove].reset();
+        	valRemove(value);
         	return true; 
         }
 
@@ -85,25 +100,26 @@ public:
         		if (!hasL(toRemove * 2 + 1))
         		{
         			int toSwap = toRemove * 2 + 1;
-	        		swap(toRemove, toSwap); 
+	        		swap(m_nodePtrs, toRemove, toSwap); 
 	        		toRemove = toSwap;        			
         		}
         		else
         		{
 	        		int toSwap = smallest(toRemove * 2 + 1);
-	        		swap(toRemove, toSwap); 
+	        		swap(m_nodePtrs, toRemove, toSwap); 
 	        		toRemove = toSwap;        			
         		}
 
         		while(hasChildren(toRemove))
         		{
         			int toSwap = smallest(toRemove);
-        			swap(toRemove, toSwap);
+        			swap(m_nodePtrs, toRemove, toSwap);
 	        		toRemove = toSwap;
         		}
 
         		// at this point the node has no children, so we can delete it
         		m_nodePtrs[toRemove].reset();
+	        	valRemove(value);
         		return true;
         	}
         	else if (hasL(toRemove))
@@ -111,29 +127,32 @@ public:
         		if (!hasR(toRemove * 2))
         		{
         			int toSwap = toRemove * 2;
-	        		swap(toRemove, toSwap); 
+	        		swap(m_nodePtrs, toRemove, toSwap); 
 	        		toRemove = toSwap;        			
         		}
         		else
         		{
 	        		int toSwap = largest(toRemove * 2);
-	        		swap(toRemove, toSwap); 
+	        		swap(m_nodePtrs, toRemove, toSwap); 
 	        		toRemove = toSwap;        			
         		}
 
         		while(hasChildren(toRemove))
         		{
         			int toSwap = largest(toRemove);
-        			swap(toRemove, toSwap);
+        			swap(m_nodePtrs, toRemove, toSwap);
 	        		toRemove = toSwap;
         		}
 
         		// at this point the node has no children, so we can delete it
         		m_nodePtrs[toRemove].reset();
+	        	valRemove(value);
         		return true;        		
         	}
         }    	
     }
+
+
 
 	bool contains(const T& value)
     {
@@ -157,8 +176,85 @@ public:
     }
 
 private:
-	std::vector<std::unique_ptr<Node> > m_nodePtrs;
-	std::function<int(T,T)> compare;	
+	std::vector<std::shared_ptr<Node> > m_nodePtrs;
+	std::function<int(T,T)> compare;
+	std::vector<std::shared_ptr<Node> > m_valHolder;
+	
+    void medianBalance(const std::vector<std::shared_ptr<Node> >& vals, int beg, int end)
+    {
+    	// Base cases: subarray of size 0 or 1
+    	if (end - beg == 1)
+    	{
+    		medianInsert(vals, beg);
+    		return;
+    	}
+    	else if (end - beg == 0)
+    	{
+    		return;
+    	}
+    	else
+    	{
+    		int mid = beg + (end - beg) / 2;
+    		medianInsert(vals, mid);
+    		medianBalance(vals, beg, mid);
+    		medianBalance(vals, mid+1, end);
+    	}
+    }
+
+    void medianInsert(const std::vector<std::shared_ptr<Node> >& vals, int valPos)
+    {
+    	int treePos = findIndex(vals[valPos]->getVal());
+    	m_nodePtrs[treePos] = vals[valPos];
+    }
+
+    void valRemove(const T& val)
+    {
+    	for (auto it = m_valHolder.begin(); it!=m_valHolder.end(); ++it)
+    	{
+    		if ((*it)->getVal() == val)
+    		{
+    			m_valHolder.erase(it);
+    			break;
+    		}
+    	}
+    }
+
+	void quickSort( std::vector<std::shared_ptr<Node> >& vec ) 
+	{
+		quick( vec, 0, vec.size() - 1 );
+	}
+	
+	void quick( std::vector<std::shared_ptr<Node> >& vec, int lo, int hi ) 
+	{
+		if (hi <= lo) { // this signals the end of our recursion
+			return; 
+		}
+		int lt = lo; // lt = less than. Everything to the left is 
+					 //   less than the partitioning element
+		int gt = hi; // gt = greater than. Everything to the right
+					 //   is greater than the partitioning element
+		int i = lo;
+		while ((gt >= i) == 1) {
+			// lt is the partitioning index in this case
+			if 	(compare(vec[i]->getVal(), vec[lt]->getVal()) == -1)
+			{ 
+				swap(vec, lt, i); ++i; ++lt;
+			}
+			else if (compare(vec[i]->getVal(), vec[lt]->getVal()) == 1)
+			{
+				swap(vec, gt, i); --gt;
+			}
+			else 						
+			{
+				++i;
+			}
+		}
+
+		// Since our partitioning element(s) is now in the right place,
+		// it is not included in the recursion beyond this point
+		quick(vec, lo, lt-1);
+		quick(vec, gt+1, hi);
+	}
 
 	int findIndex (const T& value)
 	{
@@ -330,15 +426,15 @@ private:
     	int newSize = m_nodePtrs.size() + 1;
     	for (int i = 0; i < newSize; ++i)
     	{
-	    	m_nodePtrs.push_back(std::unique_ptr<Node>());
+	    	m_nodePtrs.push_back(std::shared_ptr<Node>());
     	}
     }
 
-	void swap(int lInd, int rInd)
+	void swap(std::vector<std::shared_ptr<Node> >& vec, int lInd, int rInd)
     {
-        auto temp = std::move(m_nodePtrs[lInd]);
-        m_nodePtrs[lInd] = std::move(m_nodePtrs[rInd]);
-        m_nodePtrs[rInd] = std::move(temp);
+        auto temp = vec[lInd];
+        vec[lInd] = vec[rInd];
+        vec[rInd] = temp;
     } 
 
 };

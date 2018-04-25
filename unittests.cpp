@@ -86,14 +86,13 @@ bool TreeTests::insertMany()
 			return false;
 		}
 	}
-
 	return true;
 }
 
 // inserts 10k shuffled integers, chooses a random integer to leave alone, deletes the rest in a random fashion. Returns true if the value of the root is the chosen integer
 bool TreeTests::deleteMany()
 {
-	int numInts = 100;
+	int numInts = 1000;
 	std::srand ( unsigned ( std::time(0) ) );
 
 	std::vector<int> vec;
