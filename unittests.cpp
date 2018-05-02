@@ -5,51 +5,55 @@
 #include <vector>
 #include <ctime>
 
-// Test_Registrar<TreeTests> TreeTests::registrar;
+bool TreeTests::threeElementBalance()
+{
+	MySearchTree<int> tree;
+	tree.insert(1);
+	if (!(tree.balance() == 1))
+	{
+		return false;
+	}	
+	tree.insert(2);
+	if (!(tree.balance() == 1))
+	{
+		return false;
+	}	
+	tree.insert(3);
 
-// bool TreeTests::threeElementBalance()
-// {
-// 	MySearchTree<int> tree;
-// 	tree.insert(1);
-// 	tree.insert(2);
-// 	tree.insert(3);
+	if (!(tree.balance() == 2))
+	{
+		return false;
+	}
 
-// 	if (tree.balance() == 0)
-// 	{
-// 		return true;
-// 	}
-// 	else
-// 	{
-// 		return false;
-// 	}
-// }
+	return true;
+}
 
-// bool TreeTests::sevenElementBalance()
-// {
-// 	MySearchTree<int> tree;
-// 	tree.insert(1);
-// 	tree.insert(2);
-// 	tree.insert(3);
-// 	tree.insert(4);
-// 	tree.insert(5);
-// 	tree.insert(6);
-// 	tree.insert(7);
-
-// 	if (tree.balance() == 0)
-// 	{
-// 		return true;
-// 	}
-// 	else
-// 	{
-// 		return false;
-// 	}
-// }
+bool TreeTests::sevenElementBalance()
+{
+	MySearchTree<int> tree;
+	tree.insert(1);
+	tree.insert(2);
+	tree.insert(3);
+	tree.insert(4);
+	tree.insert(5);
+	tree.insert(6);
+	tree.insert(7);
+	std::cout << "\nstarting\n";
+	if (tree.balance() == 4)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
 
 // inserts 10k shuffled integers, checks if it contains() all of them
 bool TreeTests::insertMany()
 {
 	std::srand ( unsigned ( std::time(0) ) );
-	int numInts = 1000;
+	int numInts = 10;
 	std::vector<int> vec;
 	for (int ii = 0; ii < numInts; ++ii)
 	{
@@ -92,7 +96,7 @@ bool TreeTests::insertMany()
 // inserts 10k shuffled integers, chooses a random integer to leave alone, deletes the rest in a random fashion. Returns true if the value of the root is the chosen integer
 bool TreeTests::deleteMany()
 {
-	int numInts = 1000;
+	int numInts = 10;
 	std::srand ( unsigned ( std::time(0) ) );
 
 	std::vector<int> vec;

@@ -35,6 +35,12 @@ private:
 	private:
 		const T m_data;
 	};
+    struct ValStruct
+    {
+        ValStruct(std::shared_ptr<Node>& ptr): m_data(ptr->getVal()), m_ptr(ptr) {}
+        const T& m_data;
+        std::shared_ptr<Node> m_ptr;
+    };
 
 public: 
     MySearchTree(std::function<int(T,T)> comparator = cmp): compare(comparator) 
@@ -43,15 +49,17 @@ public:
         m_nodePtrs[1] = nullptr;
     }
 
-    void balance()
+    int balance()
     {
+        getSortedVals(1);
     	// reset tree to empty vector of size 2
     	m_nodePtrs.clear();
     	m_nodePtrs.push_back(std::shared_ptr<Node>());
     	m_nodePtrs.push_back(std::shared_ptr<Node>());
 
-    	quickSort(m_valHolder);
-    	medianBalance(m_valHolder, 0, m_valHolder.size());
+    	medianBalance(m_sortedVals, 0, m_sortedVals.size());
+
+        return getNumBarren(1);
     }
 
 	bool insert(const T& value)
@@ -62,8 +70,7 @@ public:
         if (!static_cast<bool>(m_nodePtrs[pos]))
         {
         	m_nodePtrs[pos] = std::make_shared<MySearchTree<T>::Node>(value);
-        	m_valHolder.push_back(m_nodePtrs[pos]);
-        	balance();
+        	// balance();
         	return true; 
         }
         // if the spot is taken, it means this is a duplicate
@@ -87,7 +94,6 @@ public:
         if (!hasChildren(toRemove))
         {
         	m_nodePtrs[toRemove].reset();
-        	valRemove(value);
         	return true; 
         }
 
@@ -119,7 +125,6 @@ public:
 
         		// at this point the node has no children, so we can delete it
         		m_nodePtrs[toRemove].reset();
-	        	valRemove(value);
         		return true;
         	}
         	else if (hasL(toRemove))
@@ -146,7 +151,6 @@ public:
 
         		// at this point the node has no children, so we can delete it
         		m_nodePtrs[toRemove].reset();
-	        	valRemove(value);
         		return true;        		
         	}
         }    	
@@ -178,9 +182,157 @@ public:
 private:
 	std::vector<std::shared_ptr<Node> > m_nodePtrs;
 	std::function<int(T,T)> compare;
-	std::vector<std::shared_ptr<Node> > m_valHolder;
-	
-    void medianBalance(const std::vector<std::shared_ptr<Node> >& vals, int beg, int end)
+	std::vector<ValStruct> m_sortedVals;
+
+    // Makes m_sortedVals a sorted vector of the subtree denoted by startingIndex in linear time
+    // 1) goes to minimum value (leftmost node)
+    // 2) checks left; if left exists and is not already in m_sortedVals it travels there
+    // 3) checks current node; if current is not in m_sortedVals it adds it
+    // 4) checks right; if right is not in m_sortedVals it travels there
+    // 5) travels upwards. if the current node is our starting node we stop here rather than traveling upwards
+    void getSortedVals(int startingIndex)
+    {
+        m_sortedVals.clear();
+        int currentInd = startingIndex;
+
+        // base case: wants to climb above the starting index
+        while (true)
+        {
+            if (!withinCapacity(currentInd * 2 + 1))
+            {
+                incCapacity();
+            }
+            // check left
+            if (static_cast<bool>(m_nodePtrs[currentInd * 2]))
+            {
+                if ((!m_sortedVals.empty()) && (compare(m_nodePtrs[currentInd * 2]->getVal(), m_sortedVals.back().m_data) <= 0))
+                {
+                    // ignore, since the value is already in m_sortedVals if it's less than the end element. m_sortedVals
+                    // will only be empty when we're finding the leftmost node to start, and we don't want to do comparisons
+                    // if it's empty. 
+                }
+                else
+                {
+                    currentInd = currentInd * 2; // go left
+                    continue;
+                }
+            }
+
+            // check current
+            if (m_sortedVals.empty())
+            {
+                m_sortedVals.push_back(ValStruct(m_nodePtrs[currentInd]));
+            }
+            else if ( compare(m_nodePtrs[currentInd]->getVal(), m_sortedVals.back().m_data) == 1 )
+            {
+                m_sortedVals.push_back(ValStruct(m_nodePtrs[currentInd]));
+            }
+
+            // check right
+            if (static_cast<bool>(m_nodePtrs[currentInd * 2 + 1]))
+            {
+                if ( compare(m_nodePtrs[currentInd * 2 + 1]->getVal(), m_sortedVals.back().m_data) == 1)
+                {
+                    currentInd = currentInd * 2 + 1; // go right
+                    continue;
+                }
+                else
+                {
+                    // ignore
+                }
+            }
+
+            // check stop condition
+            if ( currentInd == startingIndex )
+            {
+                break;
+            }
+            else
+            {
+                currentInd = currentInd / 2; // climb up
+            }
+        }
+    }
+
+    // where barren = no children
+    // Note: this algorithm is nearly identical to getSortedVals()
+    int getNumBarren(int startingIndex)
+    {
+        m_sortedVals.clear();
+        int currentInd = startingIndex;
+        int numChildren = 0;
+        int numBarren = 0;
+
+        while (true)
+        {
+            if (!withinCapacity(currentInd * 2 + 1))
+            {
+                incCapacity();
+            }
+            numChildren = 0;
+
+            // check left
+            if (static_cast<bool>(m_nodePtrs[currentInd * 2]))
+            {
+                numChildren++;
+                if ((!m_sortedVals.empty()) && (compare(m_nodePtrs[currentInd * 2]->getVal(), m_sortedVals.back().m_data) <= 0))
+                {
+                    // ignore, since the value is already in m_sortedVals if it's less than the end element. m_sortedVals
+                    // will only be empty when we're finding the leftmost node to start, and we don't want to do comparisons
+                    // if it's empty. 
+                }
+                else
+                {
+                    currentInd = currentInd * 2; // go left
+                    continue;
+                }
+            }
+
+            // check current
+            if (m_sortedVals.empty())
+            {
+                m_sortedVals.push_back(ValStruct(m_nodePtrs[currentInd]));
+            }
+            else if ( compare(m_nodePtrs[currentInd]->getVal(), m_sortedVals.back().m_data) == 1 )
+            {
+                m_sortedVals.push_back(ValStruct(m_nodePtrs[currentInd]));
+            }
+
+            // check right
+            if (static_cast<bool>(m_nodePtrs[currentInd * 2 + 1]))
+            {
+                numChildren++;
+                if ( compare(m_nodePtrs[currentInd * 2 + 1]->getVal(), m_sortedVals.back().m_data) == 1)
+                {
+                    currentInd = currentInd * 2 + 1; // go right
+                    continue;
+                }
+                else
+                {
+                    // ignore
+                }
+            }
+
+            if (numChildren == 0)
+            {
+                // std::cout << "barren found at index " << currentInd << "\n";
+                numBarren++;
+            }
+
+            // check stop condition
+            if ( currentInd == startingIndex )
+            {
+                return numBarren;
+            }
+            else
+            {
+                currentInd = currentInd / 2; // climb up
+            }
+        }
+
+    }
+
+    void medianBalance(const std::vector<ValStruct>& vals, int beg, int end)
     {
     	// Base cases: subarray of size 0 or 1
     	if (end - beg == 1)
@@ -201,60 +353,11 @@ private:
     	}
     }
 
-    void medianInsert(const std::vector<std::shared_ptr<Node> >& vals, int valPos)
+    void medianInsert(const std::vector<ValStruct>& vals, int valPos)
     {
-    	int treePos = findIndex(vals[valPos]->getVal());
-    	m_nodePtrs[treePos] = vals[valPos];
+    	int treePos = findIndex(vals[valPos].m_data);
+    	m_nodePtrs[treePos] = vals[valPos].m_ptr;
     }
-
-    void valRemove(const T& val)
-    {
-    	for (auto it = m_valHolder.begin(); it!=m_valHolder.end(); ++it)
-    	{
-    		if ((*it)->getVal() == val)
-    		{
-    			m_valHolder.erase(it);
-    			break;
-    		}
-    	}
-    }
-
-	void quickSort( std::vector<std::shared_ptr<Node> >& vec ) 
-	{
-		quick( vec, 0, vec.size() - 1 );
-	}
-	
-	void quick( std::vector<std::shared_ptr<Node> >& vec, int lo, int hi ) 
-	{
-		if (hi <= lo) { // this signals the end of our recursion
-			return; 
-		}
-		int lt = lo; // lt = less than. Everything to the left is 
-					 //   less than the partitioning element
-		int gt = hi; // gt = greater than. Everything to the right
-					 //   is greater than the partitioning element
-		int i = lo;
-		while ((gt >= i) == 1) {
-			// lt is the partitioning index in this case
-			if 	(compare(vec[i]->getVal(), vec[lt]->getVal()) == -1)
-			{ 
-				swap(vec, lt, i); ++i; ++lt;
-			}
-			else if (compare(vec[i]->getVal(), vec[lt]->getVal()) == 1)
-			{
-				swap(vec, gt, i); --gt;
-			}
-			else 						
-			{
-				++i;
-			}
-		}
-
-		// Since our partitioning element(s) is now in the right place,
-		// it is not included in the recursion beyond this point
-		quick(vec, lo, lt-1);
-		quick(vec, gt+1, hi);
-	}
 
 	int findIndex (const T& value)
 	{
