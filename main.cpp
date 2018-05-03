@@ -1,10 +1,7 @@
 #include "unittests.h"
-#include <memory> 
-#include <vector>
 
 int main() 
 {
-	TreeTests tests;
-	tests.Run();
+    UnitTests::Run_All();
 	return 0;
 }

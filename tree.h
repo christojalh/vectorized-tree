@@ -11,8 +11,10 @@
 // 1) many things are const
 // 2) the templated type is always passed by const ref so it is only ever copied once
 
-#ifndef TREE
-#define TREE
+// possible idea: replace all 2x with LEFT and 2x + 1 with RIGHT
+
+#ifndef __TREE__
+#define __TREE__
 
 #include <memory>
 #include <vector>
@@ -21,6 +23,7 @@
 #include <stdexcept>
 #include <functional>
 #include <algorithm>
+#include <cmath>
 
 template<typename T> 
 class MySearchTree 
@@ -47,6 +50,119 @@ public:
     {
         m_nodePtrs.resize(2);
         m_nodePtrs[1] = nullptr;
+    }
+
+    // this only works with integers
+    void prettyPrint()
+    {
+        std::cout << "\nI AM PRETTY\n";
+        balance();
+        int N = m_sortedVals.size();
+        int h = static_cast<int>(log2(N)); // is it?
+        int totalLines = h + 1;
+        int line = 1; 
+        m_printOrder.clear();
+        m_printOrder.push_back(1);
+        int startingSpace = static_cast<int>(pow(2, h)) - 1;
+        int charSpaces = 0; 
+        // int max = m_sortedVals[m_sortedVals.size() - 1].m_data;
+        // int charWidth = 0;
+        // int elementWidth;
+        // while (max > 0)
+        // {
+        //     ++charWidth;
+        //     max = max/10;
+        // }
+
+
+        while (line <= totalLines)
+        {
+            for (int ii = 0; ii < startingSpace; ++ii)
+            {
+                std::cout << " ";
+            }
+            for (int index : m_printOrder)
+            {
+                if (exists(m_nodePtrs[index]))
+                {
+                    // int val = m_nodePtrs[index]->getVal();
+                    // elementWidth = 0;
+                    // while (val > 0)
+                    // {
+                    //     ++elementWidth;
+                    //     val = val/10;
+                    // }
+                    // while (elementWidth < charWidth)
+                    // {
+                    //     std::cout << " ";
+                    //     ++elementWidth;
+                    // }
+                    std::cout << m_nodePtrs[index]->getVal();
+                }
+                else
+                {
+                    std::cout << " ";
+                    // for (int ii = 0; ii < charWidth; ++ii)
+                    // {
+                    //     std::cout << " ";
+                    // }
+                }
+                for (int ii = 0; ii < charSpaces; ++ii)
+                {
+                    std::cout << " ";
+                }
+            }
+            std::cout << "\n";
+
+            getNextRow(m_printOrder);
+            charSpaces = startingSpace;
+            --h;
+            startingSpace = static_cast<int>(pow(2, h)) - 1;
+            ++line;
+        }
+    }
+
+    void getNextRow(std::vector<int>& vec)
+    {
+        auto oldvec = vec;
+        vec.clear();
+        for (int ii : oldvec)
+        {
+            if (ii == 0)
+            {
+                vec.push_back(0);
+                vec.push_back(0);
+            }
+            else
+            {
+                if (!withinCapacity(ii * 2 + 1))
+                {
+                    incCapacity();
+                }
+
+                if (exists(m_nodePtrs[ii * 2]))
+                {
+                    vec.push_back(ii * 2);
+                }
+                else
+                {
+                    vec.push_back(0);
+                }
+                if (exists(m_nodePtrs[ii * 2 + 1]))
+                {
+                    vec.push_back(ii * 2 + 1);
+                }
+                else
+                {
+                    vec.push_back(0);
+                }
+            }
+        }
+    }
+
+    bool exists(std::shared_ptr<Node>& ptr)
+    {
+        return static_cast<bool>(ptr);
     }
 
     int balance()
@@ -153,7 +269,8 @@ public:
         		m_nodePtrs[toRemove].reset();
         		return true;        		
         	}
-        }    	
+        }  
+        return false;   	
     }
 
 
@@ -183,6 +300,7 @@ private:
 	std::vector<std::shared_ptr<Node> > m_nodePtrs;
 	std::function<int(T,T)> compare;
 	std::vector<ValStruct> m_sortedVals;
+    std::vector<int> m_printOrder;
 
     // Makes m_sortedVals a sorted vector of the subtree denoted by startingIndex in linear time
     // 1) goes to minimum value (leftmost node)
@@ -401,6 +519,8 @@ private:
 		{
 			return currentInd * 2; // go left 
 		}
+
+        return 0;
 	}
 
     static int cmp(const T& val1,const T& val2)
@@ -514,7 +634,7 @@ private:
     	return false;
     }
 
-    bool withinCapacity(const int& ind) 
+    bool withinCapacity(const uint32_t ind) 
     {
     	if (ind < m_nodePtrs.size())
     	{
