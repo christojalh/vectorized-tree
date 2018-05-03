@@ -58,7 +58,7 @@ public:
         std::cout << "\nI AM PRETTY\n";
         balance();
         int N = m_sortedVals.size();
-        int h = static_cast<int>(log2(N)); // is it?
+        int h = static_cast<int>(log2(N));
         int totalLines = h + 1;
         int line = 1; 
         m_printOrder.clear();
@@ -120,49 +120,6 @@ public:
             startingSpace = static_cast<int>(pow(2, h)) - 1;
             ++line;
         }
-    }
-
-    void getNextRow(std::vector<int>& vec)
-    {
-        auto oldvec = vec;
-        vec.clear();
-        for (int ii : oldvec)
-        {
-            if (ii == 0)
-            {
-                vec.push_back(0);
-                vec.push_back(0);
-            }
-            else
-            {
-                if (!withinCapacity(ii * 2 + 1))
-                {
-                    incCapacity();
-                }
-
-                if (exists(m_nodePtrs[ii * 2]))
-                {
-                    vec.push_back(ii * 2);
-                }
-                else
-                {
-                    vec.push_back(0);
-                }
-                if (exists(m_nodePtrs[ii * 2 + 1]))
-                {
-                    vec.push_back(ii * 2 + 1);
-                }
-                else
-                {
-                    vec.push_back(0);
-                }
-            }
-        }
-    }
-
-    bool exists(std::shared_ptr<Node>& ptr)
-    {
-        return static_cast<bool>(ptr);
     }
 
     int balance()
@@ -301,6 +258,49 @@ private:
 	std::function<int(T,T)> compare;
 	std::vector<ValStruct> m_sortedVals;
     std::vector<int> m_printOrder;
+
+    void getNextRow(std::vector<int>& vec)
+    {
+        auto oldvec = vec;
+        vec.clear();
+        for (int ii : oldvec)
+        {
+            if (ii == 0)
+            {
+                vec.push_back(0);
+                vec.push_back(0);
+            }
+            else
+            {
+                if (!withinCapacity(ii * 2 + 1))
+                {
+                    incCapacity();
+                }
+
+                if (exists(m_nodePtrs[ii * 2]))
+                {
+                    vec.push_back(ii * 2);
+                }
+                else
+                {
+                    vec.push_back(0);
+                }
+                if (exists(m_nodePtrs[ii * 2 + 1]))
+                {
+                    vec.push_back(ii * 2 + 1);
+                }
+                else
+                {
+                    vec.push_back(0);
+                }
+            }
+        }
+    }
+
+    bool exists(std::shared_ptr<Node>& ptr)
+    {
+        return static_cast<bool>(ptr);
+    }
 
     // Makes m_sortedVals a sorted vector of the subtree denoted by startingIndex in linear time
     // 1) goes to minimum value (leftmost node)
