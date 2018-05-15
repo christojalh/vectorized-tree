@@ -5,14 +5,24 @@
 // 	 if it's R, it's located at 2x + 1
 // If our vector needs to be resized, we'll insert a bunch of nullptrs to increase the size
 // 	 this way we can check if the spot is occupied/contains a node 
-// NOTE: m_nodePtrs starts at 1 instead of 0 so that it can support this parent/child data access system
-
-// NEW:
+// m_nodePtrs starts at 1 instead of 0 so that it can support this parent/child data access system
+// 
+// Functions
+//    1) insert
+//    2) remove
+//    3) contains
+//    4) balance
+//    5) rank
+//    6) size
+//    7) prettyPrint (or overloaded <<)
+// 
+// NEW PATTERNS IMPLEMENTED
 // 1) many things are const
 // 2) the templated type is always passed by const ref so it is only ever copied once
-
-// possible idea: replace all 2x with LEFT and 2x + 1 with RIGHT
-
+// 
+// Author: Chris Lee
+// Date: April 22nd, 2018
+// Last edited: May 15th, 2018
 #ifndef __TREE__
 #define __TREE__
 
@@ -24,6 +34,9 @@
 #include <functional>
 #include <algorithm>
 #include <cmath>
+#include <string>
+
+#define ROOT_INDEX 1
 
 template<typename T> 
 class MySearchTree 
@@ -49,75 +62,128 @@ public:
     MySearchTree(std::function<int(T,T)> comparator = cmp): compare(comparator) 
     {
         m_nodePtrs.resize(2);
-        m_nodePtrs[1] = nullptr;
+        m_nodePtrs[ROOT_INDEX] = nullptr;
     }
 
-    // this only works with integers
+    // NOTE: This only works with integers because of the charWidth calculation
+    // This function prints all rows of the tree beginning at the root. It divides the area into 
+    // preCharSpace and branchSpace. preCharSpace is any part of the row that doesn't contain branching.
+    // For example, the space before printing the root is the preCharSpace because there are no branches
+    // above the root. For two L/R child pairs, the space before the first L is preCharSpace along with 
+    // the space between the pairs. branchSpace is the space from child to parent for each node, inclusive.
     void prettyPrint()
     {
-        std::cout << "\nI AM PRETTY\n";
-        balance();
-        int N = m_sortedVals.size();
-        int h = static_cast<int>(log2(N));
+        // print nothing if tree is empty
+        if (!exists(m_nodePtrs[ROOT_INDEX]))
+        {
+            return;
+        }
+
+        std::vector<int> printOrder;
+        int h = getHeight(ROOT_INDEX);
         int totalLines = h + 1;
         int line = 1; 
-        m_printOrder.clear();
-        m_printOrder.push_back(1);
-        int startingSpace = static_cast<int>(pow(2, h)) - 1;
-        int charSpaces = 0; 
-        // int max = m_sortedVals[m_sortedVals.size() - 1].m_data;
-        // int charWidth = 0;
-        // int elementWidth;
-        // while (max > 0)
-        // {
-        //     ++charWidth;
-        //     max = max/10;
-        // }
-
+        printOrder.clear();
+        printOrder.push_back(ROOT_INDEX);
+        int preCharSpace;
+        int parentCurrent;
+        int parentPrevious;
+        std::string valLine;
+        std::string midLine;
+        std::string loLine;
+        int charWidth = 0;
+        int largestVal = m_nodePtrs[largest(ROOT_INDEX)]->getVal();
+        while (largestVal > 0)
+        {
+            largestVal = largestVal / 10;
+            ++charWidth;
+        }
 
         while (line <= totalLines)
         {
-            for (int ii = 0; ii < startingSpace; ++ii)
+            if (line == 1)
             {
-                std::cout << " ";
+                valLine = "";
+                preCharSpace = nodeRank(ROOT_INDEX);
+                preCharSpace = preCharSpace * charWidth;
+                addSpaces(valLine, preCharSpace);
+                std::string currentVal = std::to_string(m_nodePtrs[ROOT_INDEX]->getVal());
+                valLine += currentVal;
+                std::cout << valLine << std::endl;
             }
-            for (int index : m_printOrder)
-            {
-                if (exists(m_nodePtrs[index]))
-                {
-                    // int val = m_nodePtrs[index]->getVal();
-                    // elementWidth = 0;
-                    // while (val > 0)
-                    // {
-                    //     ++elementWidth;
-                    //     val = val/10;
-                    // }
-                    // while (elementWidth < charWidth)
-                    // {
-                    //     std::cout << " ";
-                    //     ++elementWidth;
-                    // }
-                    std::cout << m_nodePtrs[index]->getVal();
-                }
-                else
-                {
-                    std::cout << " ";
-                    // for (int ii = 0; ii < charWidth; ++ii)
-                    // {
-                    //     std::cout << " ";
-                    // }
-                }
-                for (int ii = 0; ii < charSpaces; ++ii)
-                {
-                    std::cout << " ";
-                }
-            }
-            std::cout << "\n";
 
-            getNextRow(m_printOrder);
-            charSpaces = startingSpace;
-            --h;
-            startingSpace = static_cast<int>(pow(2, h)) - 1;
+            else
+            {
+                valLine = "";
+                midLine = "";
+                loLine = "";
+                for (int ii = 0; ii < printOrder.size(); ++ii)
+                {
+                    if (isRightChild(printOrder[ii]))
+                    {
+                        if (ii == 0) // first value on line
+                        {
+                            preCharSpace = nodeRank(printOrder[ii]);
+                            preCharSpace = preCharSpace * charWidth;
+                            addSpaces(midLine, loLine, valLine, preCharSpace);
+                            addBranchSpaceRight(printOrder[ii], charWidth, midLine, loLine, valLine);                            
+                        }
+                        else if ((printOrder[ii-1] + 1) == printOrder[ii]) // has sibling
+                        {
+                            // no preCharSpace necessary, because there is only branchingSpace between siblings
+                            addBranchSpaceRight(printOrder[ii], charWidth, midLine, loLine, valLine);
+                        }
+                        else if (isRightChild(printOrder[ii-1])) // previous val is right child
+                        {
+                            // subtract 1 character width because we printed the parent column already
+                            parentCurrent = printOrder[ii] / 2;
+                            preCharSpace = nodeRank(parentCurrent) - (1 + nodeRank(printOrder[ii-1]));
+                            preCharSpace = preCharSpace * charWidth;
+                            addSpaces(midLine, loLine, valLine, preCharSpace);
+                            addBranchSpaceRight(printOrder[ii], charWidth, midLine, loLine, valLine);
+                        }
+                        else // previous val is left child
+                        {
+                            parentCurrent = printOrder[ii] / 2;
+                            parentPrevious = printOrder[ii - 1] / 2;
+                            preCharSpace = nodeRank(parentCurrent) - (1 + nodeRank(parentPrevious));
+                            preCharSpace = preCharSpace * charWidth;
+                            addSpaces(midLine, loLine, valLine, preCharSpace);
+                            addBranchSpaceRight(printOrder[ii], charWidth, midLine, loLine, valLine);
+                        }
+                    }
+
+                    else // left child
+                    {
+                        if (ii == 0) // first value on line
+                        {
+                            preCharSpace = nodeRank(printOrder[ii]);
+                            preCharSpace = preCharSpace * charWidth;
+                            addSpaces(midLine, loLine, valLine, preCharSpace);
+                            addBranchSpaceLeft(printOrder[ii], charWidth, midLine, loLine, valLine);
+                        }
+                        else if (isRightChild(printOrder[ii-1])) // previous val is a right child
+                        {
+                            preCharSpace = nodeRank(printOrder[ii]) - (1 + nodeRank(printOrder[ii-1]));
+                            preCharSpace = preCharSpace * charWidth;
+                            addSpaces(midLine, loLine, valLine, preCharSpace);
+                            addBranchSpaceLeft(printOrder[ii], charWidth, midLine, loLine, valLine);
+                        }
+                        else // previous val is a left child
+                        {
+                            parentPrevious = printOrder[ii - 1] / 2;
+                            preCharSpace = nodeRank(printOrder[ii]) - (1 + nodeRank(parentPrevious));
+                            preCharSpace = preCharSpace * charWidth;
+                            addSpaces(midLine, loLine, valLine, preCharSpace);
+                            addBranchSpaceLeft(printOrder[ii], charWidth, midLine, loLine, valLine);
+                        }
+                    }
+                }
+                std::cout << midLine << std::endl;
+                std::cout << loLine << std::endl;
+                std::cout << valLine << std::endl;
+            }
+            getNextRow(printOrder);
             ++line;
         }
     }
@@ -253,22 +319,249 @@ public:
         return m_nodePtrs[1].get();
     }
 
+    int rank(const T& value)
+    {
+        if (!contains(value))
+        {
+            return 0;
+        }
+
+        int pos = findIndex(value);
+        return nodeRank(pos);
+    }
+
+    int size(const T& value)
+    {
+        if (!contains(value))
+        {
+            return 0;
+        }
+
+        int pos = findIndex(value);
+        return nodeSize(pos);
+    }
+
 private:
 	std::vector<std::shared_ptr<Node> > m_nodePtrs;
 	std::function<int(T,T)> compare;
 	std::vector<ValStruct> m_sortedVals;
-    std::vector<int> m_printOrder;
+
+    bool isRightChild(int index)
+    {
+        if (index == ROOT_INDEX)
+        {
+            return false;
+        }
+        if (index == ((index / 2) * 2 + 1))
+        {
+            return true;
+        }
+        return false; 
+    }
+
+    bool areSiblings(int lhs, int rhs)
+    {
+        if ((lhs/2) * 2 + 1 == rhs)
+        {
+            return true;
+        }
+        if ((lhs/2) * 2 == rhs)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    void addSpaces(std::string& line, int spaces)
+    {
+        for (int ii = 0; ii < spaces; ++ii)
+        {
+            line += " ";
+        }
+    }
+
+    void addSpaces(std::string& line1, std::string& line2, std::string& line3, int spaces)
+    {
+        for (int ii = 0; ii < spaces; ++ii)
+        {
+            line1 += " ";
+            line2 += " ";
+            line3 += " ";
+        }
+    }
+
+    // this assumes index != root 
+    // branch space is from the parent twig to the child twig, inclusive
+    void addBranchSpaceLeft(int index, int charWidth, std::string& midLine, std::string& loLine, std::string& valLine)
+    {
+        int parent = index / 2;
+        // add 1 here because we want to include the parent column
+        int branchSpace = 1 + nodeRank(parent) - nodeRank(index); 
+        branchSpace = branchSpace * charWidth;
+
+        addUnderscores(midLine, branchSpace - charWidth);
+        midLine += "|";
+        if (exists(m_nodePtrs[index + 1])) // check whether this is a sibling
+        {
+            addUnderscores(midLine, charWidth - 1); // subtract 1 because we added a "|" already
+        }
+        else
+        {
+            addSpaces(midLine, charWidth - 1); // subtract 1 because we added a "|" already
+        }
+
+        loLine += "|";
+        addSpaces(loLine, branchSpace - 1); // subtract 1 to make space for the "|"
+
+        std::string currentVal = std::to_string(m_nodePtrs[index]->getVal());
+        valLine += currentVal;
+        addSpaces(valLine, branchSpace - currentVal.size());
+    }
+
+    // this assumes index != root 
+    // branch space is from the parent twig to the child twig, inclusive
+    void addBranchSpaceRight(int index, int charWidth, std::string& midLine, std::string& loLine, std::string& valLine)
+    {
+        int parent = index / 2;
+        int branchSpace = 1 + nodeRank(index) - nodeRank(parent);  
+        branchSpace = branchSpace * charWidth;
+        std::string currentVal = std::to_string(m_nodePtrs[index]->getVal());    
+        int missingSpace = charWidth - currentVal.size();    
+
+        if (exists(m_nodePtrs[index - 1])) // check if previous is its sibling
+            // if the sibling exists, it is guaranteed to be the previous value in the print order because
+            // the print function prints from left to right in the tree 
+        {
+            // No midLine "|" necessary because the left sibling should have printed it already
+            // Subtracting charWidth because the parent column is accounted for already
+            addUnderscores(midLine, branchSpace - charWidth - charWidth + 1);
+            addSpaces(midLine, charWidth - 1);
+
+            addSpaces(loLine, branchSpace - charWidth - charWidth);
+            loLine += "|";
+            addSpaces(loLine, charWidth - 1);
+
+            addSpaces(valLine, branchSpace - charWidth - charWidth);
+            valLine += currentVal;
+            addSpaces(valLine, missingSpace);
+        }
+
+        else
+        {
+            midLine += "|";
+            addUnderscores(midLine, branchSpace - charWidth);
+            addSpaces(midLine, charWidth - 1);
+
+            addSpaces(loLine, branchSpace - charWidth);
+            loLine += "|";
+            addSpaces(loLine, charWidth - 1);            
+
+            std::string currentVal = std::to_string(m_nodePtrs[index]->getVal());    
+            int missingSpace = charWidth - currentVal.size();    
+            addSpaces(valLine, branchSpace - charWidth);
+            valLine += currentVal;
+            addSpaces(valLine, missingSpace);
+        }
+    }
+
+    void addUnderscores(std::string& line, int underscores)
+    {
+        for (int ii = 0; ii < underscores; ++ii)
+        {
+            line += "_";
+        }
+    }
+
+    int getHeight(int index)
+    {
+        if (!exists(m_nodePtrs[index]))
+        {
+            return 0;
+        }
+
+        if (!withinCapacity(index * 2 + 1))
+        {
+            incCapacity();
+        }
+
+        int sizeL = getHeight(index * 2);
+        int sizeR = getHeight(index * 2 + 1);
+
+        if (index == 1)
+        {
+            // height starts at 0 for the first line 
+            --sizeL;
+            --sizeR;
+        }
+
+        if ( sizeL > sizeR )
+        {
+            return 1 + sizeL;
+        }
+        else
+        {
+            return 1 + sizeR;
+        }
+    }
+
+    int nodeRank(int index)
+    {
+        // verify the node is not null 
+        if (!exists(m_nodePtrs[index]))
+        {
+            return 0;
+        }
+
+        int current{ROOT_INDEX};
+        int rankSum{0};
+
+        while(true)
+        {
+            if (!withinCapacity(current * 2 + 1))
+            {
+                incCapacity();
+            }
+
+            if (index == current)
+            {
+                return rankSum + nodeSize(current * 2);
+            }
+            else if (m_nodePtrs[index]->getVal() > m_nodePtrs[current]->getVal())
+            {
+                rankSum += nodeSize(current * 2) + 1; // add 1 to include the parent in the rank
+                current = current * 2 + 1; 
+            }
+            else // index val < current val
+            {
+                current = current * 2;
+            }
+        }
+    }
+
+    int nodeSize(int index)
+    {
+        if (!exists(m_nodePtrs[index]))
+        {
+            return 0;
+        }
+
+        if (!withinCapacity(index * 2 + 1))
+        {
+            incCapacity();
+        }
+
+        getSortedVals(index);
+        return m_sortedVals.size();
+    }
 
     void getNextRow(std::vector<int>& vec)
     {
-        auto oldvec = vec;
-        vec.clear();
-        for (int ii : oldvec)
+        std::vector<int> newVec;
+        for (int ii : vec)
         {
             if (ii == 0)
             {
-                vec.push_back(0);
-                vec.push_back(0);
+                continue;
             }
             else
             {
@@ -279,22 +572,15 @@ private:
 
                 if (exists(m_nodePtrs[ii * 2]))
                 {
-                    vec.push_back(ii * 2);
-                }
-                else
-                {
-                    vec.push_back(0);
+                    newVec.push_back(ii * 2);
                 }
                 if (exists(m_nodePtrs[ii * 2 + 1]))
                 {
-                    vec.push_back(ii * 2 + 1);
-                }
-                else
-                {
-                    vec.push_back(0);
+                    newVec.push_back(ii * 2 + 1);
                 }
             }
         }
+        std::swap(vec, newVec);
     }
 
     bool exists(std::shared_ptr<Node>& ptr)
@@ -479,7 +765,7 @@ private:
 
 	int findIndex (const T& value)
 	{
-		int currentInd = 1; 
+		int currentInd = ROOT_INDEX; 
 
         // we'll continue traversing the tree until the value's location is found
         while (true)
@@ -543,7 +829,7 @@ private:
     {
         if ( !hasChildren(currentInd) )
         {
-            throw std::invalid_argument( "Cannot find largest child of node without children" );
+            return currentInd;
         }
 
 		if (hasR(currentInd))
@@ -661,5 +947,13 @@ private:
     } 
 
 };
+
+template<typename T>
+std::ostream& operator<< (std::ostream& os, MySearchTree<T>& tree) 
+{
+    tree.prettyPrint();
+
+    return os;
+}
 
 #endif

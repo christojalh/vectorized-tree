@@ -121,7 +121,7 @@
 			"file": "unittests.h",
 			"settings":
 			{
-				"buffer_size": 647,
+				"buffer_size": 738,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -139,7 +139,7 @@
 			"file": "unittests.cpp",
 			"settings":
 			{
-				"buffer_size": 3423,
+				"buffer_size": 3819,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -148,7 +148,7 @@
 			"file": "tree.h",
 			"settings":
 			{
-				"buffer_size": 14136,
+				"buffer_size": 17578,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -357,7 +357,7 @@
 	],
 	"find":
 	{
-		"height": 38.0
+		"height": 23.0
 	},
 	"find_in_files":
 	{
@@ -519,21 +519,22 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 647,
+						"buffer_size": 738,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								21,
-								21
+								0,
+								0
 							]
 						],
 						"settings":
 						{
 							"syntax": "Packages/C++/C++.sublime-syntax",
-							"translate_tabs_to_spaces": false
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
 						"translation.y": 0.0,
@@ -576,15 +577,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3423,
+						"buffer_size": 3819,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								137,
-								137
+								0,
+								0
 							]
 						],
 						"settings":
@@ -605,19 +606,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 14136,
+						"buffer_size": 17578,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								636,
-								636
-							],
-							[
-								653,
-								653
+								0,
+								0
 							]
 						],
 						"settings":

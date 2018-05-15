@@ -7,45 +7,105 @@
 
 Test_Registrar<TreeTests> TreeTests::registrar;
 
-bool TreeTests::prettyPrintTest()
+bool TreeTests::smallPrintTest()
 {
 	MySearchTree<int> tree;
-	VERIFY_TRUE(tree.insert(1));
-	tree.prettyPrint();
+	VERIFY_TRUE(tree.insert(5));
+	std::cout << tree;
+
+	VERIFY_TRUE(tree.insert(8));
+	VERIFY_TRUE(tree.insert(3));
+	std::cout << tree;
 
 	VERIFY_TRUE(tree.insert(2));
-	VERIFY_TRUE(tree.insert(3));
-	tree.prettyPrint();
-
-	VERIFY_TRUE(tree.insert(4));
-	VERIFY_TRUE(tree.insert(5));
-	VERIFY_TRUE(tree.insert(6));
 	VERIFY_TRUE(tree.insert(7));
-	tree.prettyPrint();
+	VERIFY_TRUE(tree.insert(6));
+	VERIFY_TRUE(tree.insert(1));
+	VERIFY_TRUE(tree.insert(4));
+	VERIFY_TRUE(tree.insert(9));
+	std::cout << tree;
 
-	VERIFY_TRUE(tree.remove(2));
-	VERIFY_TRUE(tree.remove(3));
-	tree.prettyPrint();
+	VERIFY_TRUE(tree.remove(5));
+	VERIFY_TRUE(tree.remove(6));
+	std::cout << tree;
 
-	// VERIFY_TRUE(tree.insert(2));
-	// VERIFY_TRUE(tree.insert(3));
+	MySearchTree<int> t;
+	VERIFY_TRUE(t.insert(5));
+	VERIFY_TRUE(t.insert(8));
+	VERIFY_TRUE(t.insert(3));
+	VERIFY_TRUE(t.insert(2));
+	VERIFY_TRUE(t.insert(9));
+	std::cout << t;
 
-	// VERIFY_TRUE(tree.insert(8));
-	// VERIFY_TRUE(tree.insert(9));
-	// VERIFY_TRUE(tree.insert(100));
-	// VERIFY_TRUE(tree.insert(11));
-	// VERIFY_TRUE(tree.insert(1200));
-	// VERIFY_TRUE(tree.insert(13));
-	// tree.prettyPrint();
+	MySearchTree<int> r;
+	VERIFY_TRUE(r.insert(5));
+	VERIFY_TRUE(r.insert(7));
+	VERIFY_TRUE(r.insert(9));
+	VERIFY_TRUE(r.insert(8));
+	VERIFY_TRUE(r.insert(2));
+	VERIFY_TRUE(r.insert(1));
+	std::cout << r;	
+	return true; 
+}
 
-	// VERIFY_TRUE(tree.insert(14000));
-	// VERIFY_TRUE(tree.insert(15000));
-	// VERIFY_TRUE(tree.insert(150000));
-	// VERIFY_TRUE(tree.insert(1500000));
-	// VERIFY_TRUE(tree.insert(15000000));
-	// tree.prettyPrint();
+bool TreeTests::largePrintTest()
+{
+	MySearchTree<int> tree;
+	VERIFY_TRUE(tree.insert(500));
+	VERIFY_TRUE(tree.insert(7000));
+	VERIFY_TRUE(tree.insert(300));
+	VERIFY_TRUE(tree.insert(2));
+	VERIFY_TRUE(tree.insert(8000));
+	VERIFY_TRUE(tree.insert(6000));
+	VERIFY_TRUE(tree.insert(1));
+	VERIFY_TRUE(tree.insert(400));
+	std::cout << tree;
 
 	return true; 
+}
+
+bool TreeTests::sizeTest()
+{
+	MySearchTree<int> tree;
+	VERIFY_TRUE(tree.insert(10));
+	VERIFY_EQ(tree.size(10), 1);	
+	VERIFY_TRUE(tree.insert(20));
+	VERIFY_EQ(tree.size(20), 1);	
+	VERIFY_TRUE(tree.insert(5));
+	VERIFY_EQ(tree.size(20), 1);	
+	VERIFY_TRUE(tree.insert(15));
+	VERIFY_EQ(tree.size(15), 1);	
+	VERIFY_EQ(tree.size(20), 2);	
+	VERIFY_TRUE(tree.insert(17));
+	VERIFY_EQ(tree.size(5), 1);		
+	VERIFY_EQ(tree.size(10), 5);		
+	VERIFY_EQ(tree.size(15), 2);	
+	VERIFY_EQ(tree.size(17), 1);	
+	VERIFY_EQ(tree.size(20), 3);	
+
+	return true;
+}
+
+bool TreeTests::rankTest()
+{
+	MySearchTree<int> tree;
+	VERIFY_TRUE(tree.insert(10));
+	VERIFY_EQ(tree.rank(10), 0);	
+	VERIFY_TRUE(tree.insert(20));
+	VERIFY_EQ(tree.rank(20), 1);	
+	VERIFY_TRUE(tree.insert(5));
+	VERIFY_EQ(tree.rank(20), 2);	
+	VERIFY_TRUE(tree.insert(15));
+	VERIFY_EQ(tree.rank(15), 2);	
+	VERIFY_EQ(tree.rank(20), 3);	
+	VERIFY_TRUE(tree.insert(17));
+	VERIFY_EQ(tree.rank(5), 0);		
+	VERIFY_EQ(tree.rank(10), 1);		
+	VERIFY_EQ(tree.rank(15), 2);	
+	VERIFY_EQ(tree.rank(17), 3);	
+	VERIFY_EQ(tree.rank(20), 4);	
+
+	return true;
 }
 
 bool TreeTests::threeElementBalance()
@@ -188,24 +248,13 @@ bool TreeTests::deleteMany()
 }
 
 // verifies basic insert(), contain(), remove() functionality
-bool TreeTests::singleElementTest() 
+bool TreeTests::singleElementTest(int num) 
 {
-	int root = 2; 
+	int root = num; 
 	MySearchTree<int> tree; 
-	if (tree.insert(root))
-	{
-		// continue
-	}
-	if ( !( tree.getRoot()->getVal() == root ) )
-	{
-		return false;
-	} 
-
-	if ( !tree.contains(root) )
-	{
-		return false;
-	}
-
+	VERIFY_TRUE(tree.insert(root));
+	VERIFY_EQ( tree.getRoot()->getVal(), root );
+	VERIFY_TRUE( tree.contains(root) );
 	if ( !( tree.insert(5) ) )
 	{
 		return false;
