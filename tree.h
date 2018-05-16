@@ -14,7 +14,7 @@
 //    4) balance
 //    5) rank
 //    6) size
-//    7) prettyPrint (or overloaded <<)
+//    7) overloaded << for printing
 // 
 // NEW PATTERNS IMPLEMENTED
 // 1) many things are const
@@ -22,7 +22,7 @@
 // 
 // Author: Chris Lee
 // Date: April 22nd, 2018
-// Last edited: May 15th, 2018
+// Last edited: May 16th, 2018
 #ifndef __TREE__
 #define __TREE__
 
@@ -72,7 +72,7 @@ public:
     // For example, the space before printing the root is the preCharSpace because there are no branches
     // above the root. For two L/R child pairs, the space before the first L is preCharSpace along with 
     // the space between the pairs. branchSpace is the space from child to parent for each node, inclusive.
-    void prettyPrint()
+    void prettyPrint(std::stringstream& os)
     {
         // print nothing if tree is empty
         if (!exists(m_nodePtrs[ROOT_INDEX]))
@@ -110,7 +110,7 @@ public:
                 addSpaces(valLine, preCharSpace);
                 std::string currentVal = std::to_string(m_nodePtrs[ROOT_INDEX]->getVal());
                 valLine += currentVal;
-                std::cout << valLine << std::endl;
+                os << valLine << std::endl;
             }
 
             else
@@ -181,9 +181,9 @@ public:
                         }
                     }
                 }
-                std::cout << midLine << std::endl;
-                std::cout << loLine << std::endl;
-                std::cout << valLine << std::endl;
+                os << midLine << std::endl;
+                os << loLine << std::endl;
+                os << valLine << std::endl;
             }
             getNextRow(printOrder);
             ++line;
@@ -721,7 +721,6 @@ private:
 
             if (numChildren == 0)
             {
-                // std::cout << "barren found at index " << currentInd << "\n";
                 numBarren++;
             }
 
@@ -934,6 +933,7 @@ private:
     void incCapacity()
     {
     	// double the size of our vector (and add 1) and insert a bunch of nullptrs
+        // the +1 is necessary because the root starts at index 1 instead of 0
     	int newSize = m_nodePtrs.size() + 1;
     	for (int i = 0; i < newSize; ++i)
     	{
@@ -953,8 +953,9 @@ private:
 template<typename T>
 std::ostream& operator<< (std::ostream& os, MySearchTree<T>& tree) 
 {
-    tree.prettyPrint();
-
+    std::stringstream outString;
+    tree.prettyPrint(outString);
+    os << outString.str();
     return os;
 }
 

@@ -12,6 +12,12 @@ bool TreeTests::case1_PrintTest()
 {
 	MySearchTree<int> tree;
 	VERIFY_TRUE(tree.insert(5));
+	std::stringstream printOutput;
+	tree.prettyPrint(printOutput);
+	std::stringstream correctOutput;
+	correctOutput << "5" << std::endl;
+	VERIFY_EQ(printOutput.str(), correctOutput.str());
+
 	std::cout << tree;
 	return true; 
 }
@@ -22,6 +28,15 @@ bool TreeTests::case2_PrintTest()
 	VERIFY_TRUE(tree.insert(5));
 	VERIFY_TRUE(tree.insert(8));
 	VERIFY_TRUE(tree.insert(3));
+	std::stringstream printOutput;
+	tree.prettyPrint(printOutput);
+	std::stringstream correctOutput;
+	correctOutput << " 5"  << std::endl;
+	correctOutput << "_|_" << std::endl;
+	correctOutput << "| |" << std::endl;
+	correctOutput << "3 8" << std::endl;
+	VERIFY_EQ(printOutput.str(), correctOutput.str());
+
 	std::cout << tree;
 	return true; 
 }
@@ -34,6 +49,18 @@ bool TreeTests::case3_PrintTest()
 	VERIFY_TRUE(tree.insert(3));
 	VERIFY_TRUE(tree.insert(2));
 	VERIFY_TRUE(tree.insert(7));
+	std::stringstream printOutput;
+	tree.prettyPrint(printOutput);
+	std::stringstream correctOutput;
+	correctOutput << "  5"   << std::endl;
+	correctOutput << " _|__" << std::endl;
+	correctOutput << " |  |" << std::endl;
+	correctOutput << " 3  8" << std::endl;
+	correctOutput << "_| _|" << std::endl;
+	correctOutput << "|  | " << std::endl;
+	correctOutput << "2  7 " << std::endl;
+	VERIFY_EQ(printOutput.str(), correctOutput.str());
+
 	std::cout << tree;
 	return true; 
 }
@@ -46,6 +73,18 @@ bool TreeTests::case4_PrintTest()
 	VERIFY_TRUE(t.insert(3));
 	VERIFY_TRUE(t.insert(2));
 	VERIFY_TRUE(t.insert(9));
+	std::stringstream printOutput;
+	t.prettyPrint(printOutput);
+	std::stringstream correctOutput;
+	correctOutput << "  5"   << std::endl;
+	correctOutput << " _|_"  << std::endl;
+	correctOutput << " | |"  << std::endl;
+	correctOutput << " 3 8"  << std::endl;
+	correctOutput << "_| |_" << std::endl;
+	correctOutput << "|   |" << std::endl;
+	correctOutput << "2   9" << std::endl;
+	VERIFY_EQ(printOutput.str(), correctOutput.str());
+
 	std::cout << t;
 	return true; 
 }
@@ -58,6 +97,18 @@ bool TreeTests::case5_PrintTest()
 	VERIFY_TRUE(r.insert(3));
 	VERIFY_TRUE(r.insert(4));
 	VERIFY_TRUE(r.insert(7));
+	std::stringstream printOutput;
+	r.prettyPrint(printOutput);
+	std::stringstream correctOutput;
+	correctOutput << "  5"   << std::endl;
+	correctOutput << "__|__" << std::endl;
+	correctOutput << "|   |" << std::endl;
+	correctOutput << "3   8" << std::endl;
+	correctOutput << "|_ _|" << std::endl;
+	correctOutput << " | | " << std::endl;
+	correctOutput << " 4 7 " << std::endl;
+	VERIFY_EQ(printOutput.str(), correctOutput.str());
+
 	std::cout << r;	
 	return true; 
 }
@@ -70,6 +121,18 @@ bool TreeTests::case6_PrintTest()
 	VERIFY_TRUE(q.insert(3));
 	VERIFY_TRUE(q.insert(4));
 	VERIFY_TRUE(q.insert(9));
+	std::stringstream printOutput;
+	q.prettyPrint(printOutput);
+	std::stringstream correctOutput;
+	correctOutput << "  5"   << std::endl;
+	correctOutput << "__|_"  << std::endl;
+	correctOutput << "|  |"  << std::endl;
+	correctOutput << "3  8"  << std::endl;
+	correctOutput << "|_ |_" << std::endl;
+	correctOutput << " |  |" << std::endl;
+	correctOutput << " 4  9" << std::endl;
+	VERIFY_EQ(printOutput.str(), correctOutput.str());
+
 	std::cout << q;	
 	return true; 
 }
@@ -83,6 +146,18 @@ bool TreeTests::case7_PrintTest()
 	VERIFY_TRUE(z.insert(4));
 	VERIFY_TRUE(z.insert(2));
 	VERIFY_TRUE(z.insert(9));
+	std::stringstream printOutput;
+	z.prettyPrint(printOutput);
+	std::stringstream correctOutput;
+	correctOutput << "   5"   << std::endl;
+	correctOutput << " __|_"  << std::endl;
+	correctOutput << " |  |"  << std::endl;
+	correctOutput << " 3  8"  << std::endl;
+	correctOutput << "_|_ |_" << std::endl;
+	correctOutput << "| |  |" << std::endl;
+	correctOutput << "2 4  9" << std::endl;
+	VERIFY_EQ(printOutput.str(), correctOutput.str());
+
 	std::cout << z;	
 	return true; 
 }
@@ -96,6 +171,18 @@ bool TreeTests::case8_PrintTest()
 	VERIFY_TRUE(y.insert(4));
 	VERIFY_TRUE(y.insert(2));
 	VERIFY_TRUE(y.insert(7));
+	std::stringstream printOutput;
+	y.prettyPrint(printOutput);
+	std::stringstream correctOutput;
+	correctOutput << "   5"   << std::endl;
+	correctOutput << " __|__" << std::endl;
+	correctOutput << " |   |" << std::endl;
+	correctOutput << " 3   8" << std::endl;
+	correctOutput << "_|_ _|" << std::endl;
+	correctOutput << "| | | " << std::endl;
+	correctOutput << "2 4 7 " << std::endl;
+	VERIFY_EQ(printOutput.str(), correctOutput.str());
+
 	std::cout << y;
 	return true; 
 }
@@ -112,6 +199,22 @@ bool TreeTests::largePrintTest()
 	VERIFY_TRUE(tree.insert(4));
 	VERIFY_TRUE(tree.insert(400));
 	VERIFY_TRUE(tree.insert(450));
+	std::stringstream printOutput;
+	tree.prettyPrint(printOutput);
+	std::stringstream correctOutput;
+	correctOutput << "                    500"              << std::endl;
+	correctOutput << "        ____________|________   "     << std::endl;
+	correctOutput << "        |                   |   "     << std::endl;
+	correctOutput << "        300                 7000"     << std::endl;
+	correctOutput << "________|____           ____|____   " << std::endl;
+	correctOutput << "|           |           |       |   " << std::endl;
+	correctOutput << "2           400         6000    8000" << std::endl;
+	correctOutput << "|____       |____   "                 << std::endl;
+	correctOutput << "    |           |   "                 << std::endl;
+	correctOutput << "    4           450 "                 << std::endl;
+
+	VERIFY_EQ(printOutput.str(), correctOutput.str());
+
 	std::cout << tree;
 
 	return true; 
