@@ -4,31 +4,42 @@
 #include <algorithm>
 #include <vector>
 #include <ctime>
+#include <sstream>
 
 Test_Registrar<TreeTests> TreeTests::registrar;
 
-bool TreeTests::smallPrintTest()
+bool TreeTests::case1_PrintTest()
 {
 	MySearchTree<int> tree;
 	VERIFY_TRUE(tree.insert(5));
 	std::cout << tree;
+	return true; 
+}
 
+bool TreeTests::case2_PrintTest()
+{
+	MySearchTree<int> tree;
+	VERIFY_TRUE(tree.insert(5));
 	VERIFY_TRUE(tree.insert(8));
 	VERIFY_TRUE(tree.insert(3));
 	std::cout << tree;
+	return true; 
+}
 
+bool TreeTests::case3_PrintTest()
+{
+	MySearchTree<int> tree;
+	VERIFY_TRUE(tree.insert(5));
+	VERIFY_TRUE(tree.insert(8));
+	VERIFY_TRUE(tree.insert(3));
 	VERIFY_TRUE(tree.insert(2));
 	VERIFY_TRUE(tree.insert(7));
-	VERIFY_TRUE(tree.insert(6));
-	VERIFY_TRUE(tree.insert(1));
-	VERIFY_TRUE(tree.insert(4));
-	VERIFY_TRUE(tree.insert(9));
 	std::cout << tree;
+	return true; 
+}
 
-	VERIFY_TRUE(tree.remove(5));
-	VERIFY_TRUE(tree.remove(6));
-	std::cout << tree;
-
+bool TreeTests::case4_PrintTest()
+{
 	MySearchTree<int> t;
 	VERIFY_TRUE(t.insert(5));
 	VERIFY_TRUE(t.insert(8));
@@ -36,15 +47,56 @@ bool TreeTests::smallPrintTest()
 	VERIFY_TRUE(t.insert(2));
 	VERIFY_TRUE(t.insert(9));
 	std::cout << t;
+	return true; 
+}
 
+bool TreeTests::case5_PrintTest()
+{
 	MySearchTree<int> r;
 	VERIFY_TRUE(r.insert(5));
-	VERIFY_TRUE(r.insert(7));
-	VERIFY_TRUE(r.insert(9));
 	VERIFY_TRUE(r.insert(8));
-	VERIFY_TRUE(r.insert(2));
-	VERIFY_TRUE(r.insert(1));
+	VERIFY_TRUE(r.insert(3));
+	VERIFY_TRUE(r.insert(4));
+	VERIFY_TRUE(r.insert(7));
 	std::cout << r;	
+	return true; 
+}
+
+bool TreeTests::case6_PrintTest()
+{
+	MySearchTree<int> q;
+	VERIFY_TRUE(q.insert(5));
+	VERIFY_TRUE(q.insert(8));
+	VERIFY_TRUE(q.insert(3));
+	VERIFY_TRUE(q.insert(4));
+	VERIFY_TRUE(q.insert(9));
+	std::cout << q;	
+	return true; 
+}
+
+bool TreeTests::case7_PrintTest()
+{
+	MySearchTree<int> z;
+	VERIFY_TRUE(z.insert(5));
+	VERIFY_TRUE(z.insert(8));
+	VERIFY_TRUE(z.insert(3));
+	VERIFY_TRUE(z.insert(4));
+	VERIFY_TRUE(z.insert(2));
+	VERIFY_TRUE(z.insert(9));
+	std::cout << z;	
+	return true; 
+}
+
+bool TreeTests::case8_PrintTest()
+{
+	MySearchTree<int> y;
+	VERIFY_TRUE(y.insert(5));
+	VERIFY_TRUE(y.insert(8));
+	VERIFY_TRUE(y.insert(3));
+	VERIFY_TRUE(y.insert(4));
+	VERIFY_TRUE(y.insert(2));
+	VERIFY_TRUE(y.insert(7));
+	std::cout << y;
 	return true; 
 }
 
@@ -57,8 +109,9 @@ bool TreeTests::largePrintTest()
 	VERIFY_TRUE(tree.insert(2));
 	VERIFY_TRUE(tree.insert(8000));
 	VERIFY_TRUE(tree.insert(6000));
-	VERIFY_TRUE(tree.insert(1));
+	VERIFY_TRUE(tree.insert(4));
 	VERIFY_TRUE(tree.insert(400));
+	VERIFY_TRUE(tree.insert(450));
 	std::cout << tree;
 
 	return true; 
@@ -206,9 +259,6 @@ bool TreeTests::deleteMany()
 	{
 		// continue
 	}
-	// std::cout << "Final: " << final << "\n";
-	// std::cout << "Root: " << tree.getRoot()->getVal() << "\n";
-	// std::cout << "Insertion sequence: ";
 
 	for (int ii = 0; ii < numInts; ++ii)
 	{
@@ -239,7 +289,6 @@ bool TreeTests::deleteMany()
 		}
 	}
 
-	// std::cout << "Value of root: " << tree.getRoot()->getVal() << "\n\n";
 	if (tree.getRoot()->getVal() == final)
 	{
 		return true;			
@@ -248,9 +297,9 @@ bool TreeTests::deleteMany()
 }
 
 // verifies basic insert(), contain(), remove() functionality
-bool TreeTests::singleElementTest(int num) 
+bool TreeTests::singleElementTest() 
 {
-	int root = num; 
+	int root = 7; 
 	MySearchTree<int> tree; 
 	VERIFY_TRUE(tree.insert(root));
 	VERIFY_EQ( tree.getRoot()->getVal(), root );

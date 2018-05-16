@@ -1,11 +1,11 @@
 // VECTORIZED TREE
-// Any time we make a node, we access the data through our vector of m_nodePtrs
-// If we want to access a child...
-//	 if it's L, it's located at 2x; x is the index of the parent
+// -Implemented as a vector of Node pointers
+// -To access a child...
+//	 if it's L, it's located at 2x where x is the index of the parent
 // 	 if it's R, it's located at 2x + 1
-// If our vector needs to be resized, we'll insert a bunch of nullptrs to increase the size
-// 	 this way we can check if the spot is occupied/contains a node 
-// m_nodePtrs starts at 1 instead of 0 so that it can support this parent/child data access system
+// -Pointers are used because they can be set to null when the vector is resized. Null values indicate
+//      the index is 'open' and can be filled with a new child node
+// -The tree starts at index 1 instead of 0 so that it can support this parent/child data access system
 // 
 // Functions
 //    1) insert
@@ -35,6 +35,7 @@
 #include <algorithm>
 #include <cmath>
 #include <string>
+#include <sstream>
 
 #define ROOT_INDEX 1
 
@@ -123,7 +124,8 @@ public:
                     {
                         if (ii == 0) // first value on line
                         {
-                            preCharSpace = nodeRank(printOrder[ii]);
+                            parentCurrent = printOrder[ii] / 2;
+                            preCharSpace = nodeRank(parentCurrent);
                             preCharSpace = preCharSpace * charWidth;
                             addSpaces(midLine, loLine, valLine, preCharSpace);
                             addBranchSpaceRight(printOrder[ii], charWidth, midLine, loLine, valLine);                            
